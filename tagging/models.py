@@ -7,6 +7,7 @@ try:
 except NameError:
     from sets import Set as set
 
+import urllib
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
@@ -468,6 +469,11 @@ class Tag(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def url_name(self):
+        return urllib.quote(self.name, safe='')
+
 
 class TaggedItem(models.Model):
     """
