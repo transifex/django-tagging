@@ -19,6 +19,7 @@ class TagField(CharField):
         kwargs['max_length'] = kwargs.get('max_length', 255)
         kwargs['blank'] = kwargs.get('blank', True)
         kwargs['default'] = kwargs.get('default', '')
+        self._initialized = False
         super(TagField, self).__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name):
@@ -29,9 +30,6 @@ class TagField(CharField):
 
         # Save tags back to the database post-save
         signals.post_save.connect(self._save, cls, True)
-
-        # Update tags from Tag objects post-init
-        signals.post_init.connect(self._update, cls, True)
 
     def __get__(self, instance, owner=None):
         """
@@ -92,6 +90,9 @@ class TagField(CharField):
         """
         Helper: get an instance's tag cache.
         """
+        if not self._initialized:
+            self._initialized = True
+            self._update(instance=instance)        
         return getattr(instance, '_%s_cache' % self.attname, None)
 
     def _set_instance_tag_cache(self, instance, tags):
