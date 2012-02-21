@@ -472,7 +472,7 @@ class Tag(models.Model):
 
     @property
     def url_name(self):
-        return urllib.quote(self.name, safe='')
+        return urllib.quote(self.name.encode('UTF-8'), safe='')
 
 
 class TaggedItem(models.Model):
