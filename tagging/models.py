@@ -8,7 +8,12 @@ except NameError:
     from sets import Set as set
 
 import urllib
-from django.contrib.contenttypes import generic
+try:
+    # django 1.5-ish
+    from django.contrib.contenttypes.generic import GenericForeignKey
+except ImportError:
+    # django 1.10-ish
+    from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models.query import QuerySet
@@ -482,7 +487,7 @@ class TaggedItem(models.Model):
     tag          = models.ForeignKey(Tag, verbose_name=_('tag'), related_name='items')
     content_type = models.ForeignKey(ContentType, verbose_name=_('content type'))
     object_id    = models.PositiveIntegerField(_('object id'), db_index=True)
-    object       = generic.GenericForeignKey('content_type', 'object_id')
+    object       = GenericForeignKey('content_type', 'object_id')
 
     objects = TaggedItemManager()
 
