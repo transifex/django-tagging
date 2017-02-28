@@ -6,7 +6,11 @@ import math
 import types
 
 from django.db.models.query import QuerySet
-from django.utils.encoding import force_unicode
+try:
+    from django.utils.encoding import force_unicode
+except ImportError:
+    from django.utils.encoding import force_text
+    force_unicode = force_text
 from django.utils.translation import ugettext as _
 
 # Python 2.3 compatibility
