@@ -1,4 +1,4 @@
-VERSION = (0, 4, 0, "dev", 2)
+VERSION = (0, 4, 0, "transifex", 1)
 
 
 
