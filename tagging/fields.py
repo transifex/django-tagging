@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from tagging import settings
 from tagging.models import Tag
 from tagging.utils import edit_string_for_tags
+from tagging.forms import TagField as TagFormField
+
 
 class TagField(CharField):
     """
@@ -18,8 +20,6 @@ class TagField(CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = kwargs.get('max_length', 255)
         kwargs['blank'] = kwargs.get('blank', True)
-        kwargs['default'] = kwargs.get('default', '')
-        self._initialized = False
         super(TagField, self).__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name):
@@ -54,6 +54,14 @@ class TagField(CharField):
         if instance is None:
             return edit_string_for_tags(Tag.objects.usage_for_model(owner))
 
+        tags = self._get_instance_tag_cache(instance)
+        if tags is None:
+            if instance.pk is None:
+                self._set_instance_tag_cache(instance, '')
+            else:
+                self._set_instance_tag_cache(
+                    instance, edit_string_for_tags(
+                        Tag.objects.get_for_object(instance)))
         return self._get_instance_tag_cache(instance)
 
     def __set__(self, instance, value):
@@ -61,24 +69,19 @@ class TagField(CharField):
         Set an object's tags.
         """
         if instance is None:
-            raise AttributeError(_('%s can only be set on instances.') % self.name)
+            raise AttributeError(
+                _('%s can only be set on instances.') % self.name)
         if settings.FORCE_LOWERCASE_TAGS and value is not None:
             value = value.lower()
         self._set_instance_tag_cache(instance, value)
 
-    def _save(self, **kwargs): #signal, sender, instance):
+    def _save(self, **kwargs):  # signal, sender, instance):
         """
         Save tags back to the database
         """
         tags = self._get_instance_tag_cache(kwargs['instance'])
-        Tag.objects.update_tags(kwargs['instance'], tags)
-
-    def _update(self, **kwargs): #signal, sender, instance):
-        """
-        Update tag cache from TaggedItem objects.
-        """
-        instance = kwargs['instance']
-        self._update_instance_tag_cache(instance)
+        if tags is not None:
+            Tag.objects.update_tags(kwargs['instance'], tags)
 
     def __delete__(self, instance):
         """
@@ -90,31 +93,24 @@ class TagField(CharField):
         """
         Helper: get an instance's tag cache.
         """
-        if not self._initialized:
-            self._initialized = True
-            self._update(instance=instance)        
         return getattr(instance, '_%s_cache' % self.attname, None)
 
     def _set_instance_tag_cache(self, instance, tags):
         """
         Helper: set an instance's tag cache.
         """
+        # The next instruction does nothing particular,
+        # but needed to by-pass the deferred fields system
+        # when saving an instance, which check the keys present
+        # in instance.__dict__.
+        # The issue is introducted in Django 1.10
+        instance.__dict__[self.attname] = tags
         setattr(instance, '_%s_cache' % self.attname, tags)
-
-    def _update_instance_tag_cache(self, instance):
-        """
-        Helper: update an instance's tag cache from actual Tags.
-        """
-        # for an unsaved object, leave the default value alone
-        if instance.pk is not None:
-            tags = edit_string_for_tags(Tag.objects.get_for_object(instance))
-            self._set_instance_tag_cache(instance, tags)
 
     def get_internal_type(self):
         return 'CharField'
 
     def formfield(self, **kwargs):
-        from tagging import forms
-        defaults = {'form_class': forms.TagField}
+        defaults = {'form_class': TagFormField}
         defaults.update(kwargs)
         return super(TagField, self).formfield(**defaults)
