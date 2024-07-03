@@ -3,7 +3,7 @@ Tagging related views.
 """
 from django.http import Http404
 from django.views.generic.list import ListView
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.core.exceptions import ImproperlyConfigured
 
 from tagging.models import Tag

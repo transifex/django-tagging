@@ -6,7 +6,7 @@ from django.template import Library
 from django.template import Variable
 from django.template import TemplateSyntaxError
 from django.apps.registry import apps
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from tagging.utils import LINEAR
 from tagging.utils import LOGARITHMIC
