@@ -8,9 +8,9 @@ from tagging.models import TaggedItem
 from tagging.forms import TagAdminForm
 
 
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     form = TagAdminForm
 
 
 admin.site.register(TaggedItem)
-admin.site.register(Tag, TagAdmin)

@@ -12,4 +12,3 @@ __maintainer_email__ = 'fantomas42@gmail.com'
 
 __url__ = 'https://github.com/Fantomas42/django-tagging'
 
-default_app_config = 'tagging.apps.TaggingConfig'

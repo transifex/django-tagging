@@ -14,7 +14,7 @@ DATABASE_ENGINE = os.environ.get('DATABASE_ENGINE')
 if DATABASE_ENGINE == 'postgres':
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'tagging',
             'USER': 'postgres',
             'HOST': 'localhost'
