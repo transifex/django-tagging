@@ -1,17 +1,18 @@
 """
-Custom managers for Django models registered with the tagging
-application.
+Custom managers for tagging.
 """
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 
-from tagging.models import Tag, TaggedItem
+from tagging.models import Tag
+from tagging.models import TaggedItem
+
 
 class ModelTagManager(models.Manager):
     """
     A manager for retrieving tags for a particular model.
     """
-    def get_query_set(self):
+    def get_queryset(self):
         ctype = ContentType.objects.get_for_model(self.model)
         return Tag.objects.filter(
             items__content_type__pk=ctype.pk).distinct()
@@ -24,6 +25,7 @@ class ModelTagManager(models.Manager):
 
     def usage(self, *args, **kwargs):
         return Tag.objects.usage_for_model(self.model, *args, **kwargs)
+
 
 class ModelTaggedItemManager(models.Manager):
     """
@@ -46,6 +48,7 @@ class ModelTaggedItemManager(models.Manager):
             return TaggedItem.objects.get_union_by_model(self.model, tags)
         else:
             return TaggedItem.objects.get_union_by_model(queryset, tags)
+
 
 class TagDescriptor(object):
     """
